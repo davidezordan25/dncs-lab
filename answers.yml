@@ -7,12 +7,12 @@ Subnets:
   HostsA:
     RequiredAddresses: 267
     SubnetAddress: 192.168.0.0
-    SubnetPrefixLength: 255.255.254.0 (/23)
+    SubnetPrefixLength: 23
   HostsB:
     RequiredAddresses: 253
     SubnetAddress: 192.168.2.0
-    SubnetPrefixLength: /24
+    SubnetPrefixLength: 24
   Hub:
     RequiredAddresses: 25
     SubnetAddress: 192.168.3.0
-    SubnetPrefixLength: /27
+    SubnetPrefixLength: 27
