@@ -1,0 +1,18 @@
+FirstName: Davide
+LastName: Zordan
+MatriculationNumber: 202054
+AcademicYear: 2020-2021
+GitHubUrl: https://github.com/davidezordan25/dncs-lab
+Subnets:
+  HostsA:
+    RequiredAddresses: 267
+    SubnetAddress: 192.168.0.0
+    SubnetPrefixLength: 255.255.254.0 (/23)
+  HostsB:
+    RequiredAddresses: 253
+    SubnetAddress: 192.168.2.0
+    SubnetPrefixLength: /24
+  Hub:
+    RequiredAddresses: 25
+    SubnetAddress: 192.168.3.0
+    SubnetPrefixLength: /27
