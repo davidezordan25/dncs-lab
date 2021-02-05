@@ -115,16 +115,28 @@ The assignment deliverable consists of a Github repository containing:
 - https://www.cyberciti.biz/faq/howto-linux-configuring-default-route-with-ipcommand/
 - https://www.vagrantup.com/intro/getting-started/
 
+# Team members 
+This work was developed by Davide Zordan ('202054', team leader) and Mattia Perin ('201980')
 
 # Design
 
+The number of hosts, given by the script `dcns-init`, for every subnet is: 
 
-1. **Subnet 1** is between router-1 and router-2. We used the subnet `10.1.0.0/30` to cover only the 2 routers (2<sup>32-30</sup>-2=2);
-2. **Subnet 2** is between router-1 and host-a, and according to the design requirements it has a max number of host of 267. We used private class-c addresses for this subnet `192.168.0.0/23` (2<sup>32-23</sup>-2 = 510>267);
-3. **Subnet 3** is between router-1 and host-b. We used private class-c addresses with the subnet `192.168.2.0/24` to cover the 253 hosts (2<sup>32-24</sup>-2=254>253);
-4. **Subnet 4** is between router-2 and host-c. We used private class-c addresses with the subnet `192.168.3.0/27` to cover the 25 hosts (2<sup>32-27</sup>-2=30>25).
+- Subnet(hosts-a): 267 hosts;
+- Subnet(hosts-b): 253 hosts;
+- Subnet(Hub): 25 hosts. 
 
-#### IP-Map and VLAN
+
+## Subnets
+We decided to create 4 subnets, in order to respect the given tasks (math explanations in brackets):
+1. The first is between router-1 and router-2, with subnet `10.1.0.0/30` (private class-a addresses)  because it has to cover only the 2 routers (2<sup>32-30</sup>-2=2);
+2. The second is between router-1 and host-a, with subnet `192.168.0.0/23` (private class-c addresses) beacuse it has to cover up to 267 hosts (2<sup>32-23</sup>-2 = 510>267);
+3. The third is between router-1 and host-b, with subnet `192.168.2.0/24` (private class-c addresses) beacuse it has to cover up to 253 hosts (2<sup>32-24</sup>-2=254>253);
+4. The fourth is between router-2 and host-c, with subnet `192.168.3.0/27` (private class-c addresses) beacuse it has to cover up to 25 hosts (2<sup>32-27</sup>-2=30>25).
+
+The table below shows in details the configuration for every device:
+
+### IP and VLANs
 |  Device  | Interface         |     IP      | Subnet |
 | :------: | :---------------: | :---------: | :----: |
 | Router-1 |  enp0s9 (eth2)    |  10.1.0.1   |   1    |
@@ -136,7 +148,167 @@ The assignment deliverable consists of a Github repository containing:
 | Router-2 |  enp0s8 (eth1)    | 192.168.3.1 |   4    |
 |  Host-c  |  enp0s8 (eth1)    | 192.168.3.2 |   4    |
 
-We then proceeded to create 2 VLANs, respectively for the subnets 2 and 3 with Tag `10` and `11`.
+We noticed that, with this type of simulation, interfaces use "Predictable Network Interface Names". So, we checked the corresponding names to `eth1`, `eth2` and `eth3`.
+More details: https://www.freedesktop.org/wiki/Software/systemd/PredictableNetworkInterfaceNames/
 
+Later, we proceeded to create 2 VLANs because we wanted to distinguish subnet 2 and 3. We assigned tag `10` for subnet-2 and tag `11` for subnet-3. 
+
+
+## Network Design
+
+imm.
+
+
+
+## Vagrant configuration
+We created a bash script for each device with the nequired commands. After the command `vagrant up`, those scripts will configure the devices.  We also increased the memory of `host-c` from 256 to 512 (MB), otherwise it wouldn't be able to run the Docker image.
+
+## Devices configuration
+
+### IP assignation
+We assigned an IP address to each interface with the command `ip addr add [IP_ADDR] dev [INTERFACE]`;
+Then we activated the interface with `ip link set dev [INTERFACE] up`
+
+### VLAN
+In router-1 configuration, we used `ip link add link enp0s8 name enp0s8.10 type vlan id 10` and `ip link add link enp0s8 name enp0s8.11 type vlan id 11` and added IP addresses to the virtual interfaces with `addr add 192.168.0.1/23 dev enp0s8.10` and `ip addr add 192.168.2.1/24 dev enp0s8.11` 
+to create respectively VLAN 10 and VLAN 11 and assign them to Subnet2 and Subnet3.
+
+### Forwarding
+We enabled the option for IP forwarding in the two routers with `sysctl -w net.ipv4.ip_forward=1`
+
+### Routing
+We used the command `ip route add [IP_ADDR] via [GATEWAY_IP]`. The first parameter corresponds to the network that we want to access; the second parameter is the next hop, that is the interface of the default gateway of the current subnet.
+Since we had to make the routes as generic as possibile, we used for example in router-2 `sudo ip route add 192.168.0.0/22 via 10.1.0.1`. Doing that, we cover all IPs from 192.168.0.0 to 192.168.3.255, including all of our hosts.
+
+### Switch 
+We configured the switch and assigned VLAN tags to correponding ports with these commands as superuser: 
 
 ```
+ovs-vsctl add-br switch                    
+ovs-vsctl add-port switch enp0s8               
+ovs-vsctl add-port switch enp0s9 tag="10"      
+ovs-vsctl add-port switch enp0s10 tag="11"  
+```
+
+### Docker
+Here we had to include the docker istructions in host-c as requested. So we implemented the following commands as superuser: 
+```
+apt-get update
+apt-get -y install docker.io
+systemctl start docker
+systemctl enable docker
+docker pull dustnic82/nginx-test
+docker run --name nginx -p 80:80 -d dustnic82/nginx-test
+```
+
+## Results
+Then we had to check if Host C was reachable from Host A and Host B. So we executed `curl 192.168.3.2` instruction from both of the Hosts. 
+
+We obtained this output: 
+
+```
+<!DOCTYPE html>
+<html>
+<head>
+<title>Hello World</title>
+<link href="data:image/png;base64,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" rel="icon" type="image/png" />
+<style>
+body {
+  margin: 0px;
+  font: 20px 'RobotoRegular', Arial, sans-serif;
+  font-weight: 100;
+  height: 100%;
+  color: #0f1419;
+}
+div.info {
+  display: table;
+  background: #e8eaec;
+  padding: 20px 20px 20px 20px;
+  border: 1px dashed black;
+  border-radius: 10px;
+  margin: 0px auto auto auto;
+}
+div.info p {
+    display: table-row;
+    margin: 5px auto auto auto;
+}
+div.info p span {
+    display: table-cell;
+    padding: 10px;
+}
+img {
+    width: 176px;
+    margin: 36px auto 36px auto;
+    display:block;
+}
+div.smaller p span {
+    color: #3D5266;
+}
+h1, h2 {
+  font-weight: 100;
+}
+div.check {
+    padding: 0px 0px 0px 0px;
+    display: table;
+    margin: 36px auto auto auto;
+    font: 12px 'RobotoRegular', Arial, sans-serif;
+}
+#footer {
+    position: fixed;
+    bottom: 36px;
+    width: 100%;
+}
+#center {
+    width: 400px;
+    margin: 0 auto;
+    font: 12px Courier;
+}
+
+</style>
+<script>
+var ref;
+function checkRefresh(){
+    if (document.cookie == "refresh=1") {
+        document.getElementById("check").checked = true;
+        ref = setTimeout(function(){location.reload();}, 1000);
+    } else {
+    }
+}
+function changeCookie() {
+    if (document.getElementById("check").checked) {
+        document.cookie = "refresh=1";
+        ref = setTimeout(function(){location.reload();}, 1000);
+    } else {
+        document.cookie = "refresh=0";
+        clearTimeout(ref);
+    }
+}
+</script>
+</head>
+<body onload="checkRefresh();">
+<img alt="NGINX Logo" src="http://d37h62yn5lrxxl.cloudfront.net/assets/nginx.png"/>
+<div class="info">
+<p><span>Server&nbsp;address:</span> <span>172.17.0.2:80</span></p>
+<p><span>Server&nbsp;name:</span> <span>0ed3525f20cb</span></p>
+<p class="smaller"><span>Date:</span> <span>05/Feb/2021:08:17:25 +0000</span></p>
+<p class="smaller"><span>URI:</span> <span>/</span></p>
+</div>
+<br>
+<div class="info">
+    <p class="smaller"><span>Host:</span> <span>192.168.3.2</span></p>
+    <p class="smaller"><span>X-Forwarded-For:</span> <span></span></p>
+</div>
+
+<div class="check"><input type="checkbox" id="check" onchange="changeCookie()"> Auto Refresh</div>
+    <div id="footer">
+        <div id="center" align="center">
+            Request ID: 21d9376b04b2200393fb4f92e3b00a2d<br/>
+            &copy; NGINX, Inc. 2018
+        </div>
+    </div>
+</body>
+</html>
+
+```
+
+We checked the output and we found out that it was correct.
