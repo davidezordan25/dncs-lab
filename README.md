@@ -116,7 +116,7 @@ The assignment deliverable consists of a Github repository containing:
 - https://www.vagrantup.com/intro/getting-started/
 
 # Team members 
-This work was developed by Davide Zordan (202054, team leader) and Mattia Perin (201980)
+This work has been developed by Davide Zordan (matr. number 202054, team leader) and Mattia Perin (matr. number 201980)
 
 # Design
 The result of the script `dcns-init` is: 
