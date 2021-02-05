@@ -156,7 +156,8 @@ Later, we proceeded to create 2 VLANs because we wanted to distinguish subnet 2 
 
 ## Network Design
 
-imm.
+
+<img src="design.png">
 
 
 
