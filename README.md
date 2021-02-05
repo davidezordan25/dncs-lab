@@ -198,7 +198,7 @@ docker run --name nginx -p 80:80 -d dustnic82/nginx-test
 
 ## Results
 First at all, we successfully executed ping command (`ping 192.168.2.2`) from Host-a to Host-b. 
-Than, we pinged from Host-a and Host-b to Host-c to check the correct forwarding between the subnets.
+Then, we pinged from Host-a and Host-b to Host-c to check the correct forwarding between the subnets.
 
 Finally, we executed `curl 192.168.3.2` instruction from both Host-a and Host-b. 
 
