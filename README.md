@@ -153,7 +153,7 @@ Later, we proceeded to create 2 VLANs because we wanted to distinguish subnet 2 
 
 
 ## Network Design
-<img src="design.png">
+<img src="design schema.png">
 
 
 ## Vagrant configuration
@@ -197,9 +197,12 @@ docker run --name nginx -p 80:80 -d dustnic82/nginx-test
 ```
 
 ## Results
-Then we had to check if Host C was reachable from Host A and Host B. So we executed `curl 192.168.3.2` instruction from both of the Hosts. 
+First at all, we successfully executed ping command (`ping 192.168.2.2`) from Host-a to Host-b. 
+Than, we pinged from Host-a and Host-b to Host-c to check the correct forwarding between the subnets.
 
-We obtained this output: 
+Finally, we executed `curl 192.168.3.2` instruction from both Host-a and Host-b. 
+
+We obtained this correct output: 
 
 ```
 <!DOCTYPE html>
@@ -306,4 +309,3 @@ function changeCookie() {
 
 ```
 
-We checked the output and we found out that it was correct.
