@@ -116,23 +116,21 @@ The assignment deliverable consists of a Github repository containing:
 - https://www.vagrantup.com/intro/getting-started/
 
 # Team members 
-This work was developed by Davide Zordan ('202054', team leader) and Mattia Perin ('201980')
+This work was developed by Davide Zordan (202054, team leader) and Mattia Perin (201980)
 
 # Design
-
-The number of hosts, given by the script `dcns-init`, for every subnet is: 
+The result of the script `dcns-init` is: 
 
 - Subnet(hosts-a): 267 hosts;
 - Subnet(hosts-b): 253 hosts;
 - Subnet(Hub): 25 hosts. 
 
-
 ## Subnets
 We decided to create 4 subnets, in order to respect the given tasks (math explanations in brackets):
-1. The first is between router-1 and router-2, with subnet `10.1.0.0/30` (private class-a addresses)  because it has to cover only the 2 routers (2<sup>32-30</sup>-2=2);
-2. The second is between router-1 and host-a, with subnet `192.168.0.0/23` (private class-c addresses) beacuse it has to cover up to 267 hosts (2<sup>32-23</sup>-2 = 510>267);
-3. The third is between router-1 and host-b, with subnet `192.168.2.0/24` (private class-c addresses) beacuse it has to cover up to 253 hosts (2<sup>32-24</sup>-2=254>253);
-4. The fourth is between router-2 and host-c, with subnet `192.168.3.0/27` (private class-c addresses) beacuse it has to cover up to 25 hosts (2<sup>32-27</sup>-2=30>25).
+1. The first is between router-1 and router-2, with subnet `10.1.0.0/30` (private class-a addresses) because it has to cover only the 2 routers (2<sup>32-30</sup>-2=2);
+2. The second is between router-1 and host-a, with subnet `192.168.0.0/23` (private class-c addresses) because it has to cover up to 267 hosts (2<sup>32-23</sup>-2 = 510>267);
+3. The third is between router-1 and host-b, with subnet `192.168.2.0/24` (private class-c addresses) because it has to cover up to 253 hosts (2<sup>32-24</sup>-2=254>253);
+4. The fourth is between router-2 and host-c, with subnet `192.168.3.0/27` (private class-c addresses) because it has to cover up to 25 hosts (2<sup>32-27</sup>-2=30>25).
 
 The table below shows in details the configuration for every device:
 
@@ -155,14 +153,11 @@ Later, we proceeded to create 2 VLANs because we wanted to distinguish subnet 2 
 
 
 ## Network Design
-
-
 <img src="design.png">
 
 
-
 ## Vagrant configuration
-We created a bash script for each device with the nequired commands. After the command `vagrant up`, those scripts will configure the devices.  We also increased the memory of `host-c` from 256 to 512 (MB), otherwise it wouldn't be able to run the Docker image.
+We created a bash script for each device with the required commands. In Vagrantfile, we added the specific path of each script to the corresponding device. After the command `vagrant up`, those scripts will configure the devices. We also increased the memory of `host-c` from 256 to 512 (MB), otherwise it would not be able to run the Docker image.
 
 ## Devices configuration
 
@@ -179,11 +174,10 @@ We enabled the option for IP forwarding in the two routers with `sysctl -w net.i
 
 ### Routing
 We used the command `ip route add [IP_ADDR] via [GATEWAY_IP]`. The first parameter corresponds to the network that we want to access; the second parameter is the next hop, that is the interface of the default gateway of the current subnet.
-Since we had to make the routes as generic as possibile, we used for example in router-2 `sudo ip route add 192.168.0.0/22 via 10.1.0.1`. Doing that, we cover all IPs from 192.168.0.0 to 192.168.3.255, including all of our hosts.
+Since we had to make the routes as generic as possible, we used for example in router-2 `sudo ip route add 192.168.0.0/22 via 10.1.0.1`. Doing that, we cover all IPs from 192.168.0.0 to 192.168.3.255, including all of our hosts.
 
 ### Switch 
-We configured the switch and assigned VLAN tags to correponding ports with these commands as superuser: 
-
+We configured the switch and assigned VLAN tags to corresponding ports with these commands as superuser: 
 ```
 ovs-vsctl add-br switch                    
 ovs-vsctl add-port switch enp0s8               
@@ -192,7 +186,7 @@ ovs-vsctl add-port switch enp0s10 tag="11"
 ```
 
 ### Docker
-Here we had to include the docker istructions in host-c as requested. So we implemented the following commands as superuser: 
+Here we had to include the docker instructions in host-c as requested. So, we executed the following commands as superuser: 
 ```
 apt-get update
 apt-get -y install docker.io
